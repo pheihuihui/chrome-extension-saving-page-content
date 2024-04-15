@@ -1,16 +1,16 @@
 {
-    "name": "Template",
+    "name": "Saving Content",
     "action": {},
     "manifest_version": 3,
     "version": "0.1",
     "description": "...",
-    "permissions": ["activeTab", "scripting", "contextMenus"],
+    "permissions": ["activeTab", "scripting", "contextMenus", "pageCapture"],
     "background": {
         "service_worker": "background.js"
     },
     "content_scripts": [
         {
-            "matches": ["https://*.google.com/*"],
+            "matches": ["<all_urls>"],
             "js": ["content.js"]
         }
     ],
