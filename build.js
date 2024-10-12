@@ -19,6 +19,16 @@ buildSync({
     bundle: true,
 })
 
+buildSync({
+    entryPoints: ["./src/options.ts"],
+    platform: "browser",
+    treeShaking: true,
+    outfile: "./dist/options.js",
+    tsconfig: "tsconfig.json",
+    bundle: true,
+})
+
+copyFileSync("./src/pages/options.html", "./dist/options.html")
 copyFileSync("./src/manifests/manifest.json", "./dist/manifest.json")
 
 function listAllFiles(dir) {

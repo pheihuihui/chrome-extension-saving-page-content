@@ -4,7 +4,7 @@
     "manifest_version": 3,
     "version": "0.1",
     "description": "...",
-    "permissions": ["activeTab", "scripting", "contextMenus", "pageCapture"],
+    "permissions": ["activeTab", "scripting", "contextMenus", "pageCapture", "storage"],
     "background": {
         "service_worker": "background.js"
     },
@@ -14,6 +14,7 @@
             "js": ["content.js"]
         }
     ],
+    "options_page": "options.html",
     "icons": {
         "16": "icon16.png",
         "48": "icon48.png",
