@@ -9,6 +9,8 @@ let datestr = new Date().toISOString()
 data.append("fileCreatedAt", datestr)
 data.append("fileModifiedAt", datestr)
 
+console.log(data)
+
 let config = {
     method: "post",
     maxBodyLength: Infinity,
@@ -22,11 +24,11 @@ let config = {
     data: data,
 }
 
-axios
-    .request(config)
-    .then((response) => {
-        console.log(JSON.stringify(response.data))
-    })
-    .catch((error) => {
-        console.log(error)
-    })
+// axios
+//     .request(config)
+//     .then((response) => {
+//         console.log(JSON.stringify(response.data))
+//     })
+//     .catch((error) => {
+//         console.log(error)
+//     })

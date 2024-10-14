@@ -1,23 +1,29 @@
 chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (message.type && message.type == "saving-content") {
         if (message.contentType && message.contentType == "image") {
-            fetch(message.data)
-                .then(async (response) => {
-                    let blob = await response.blob()
-                    let base64 = await blob2base64(blob)
-                    let obj = { type: "saving-content", contentType: "image", data: base64 }
-                    let str = JSON.stringify(obj)
-                    navigator.clipboard.writeText(str)
-                })
-                .then(() => {
-                    window.open("http://localhost:8080/desq/#/new-image")
-                })
+            // fetch(message.data).then(async (response) => {
+            //     let blob = await response.blob()
+            //     let data = new FormData()
+            //     data.append("assetData", blob, "image.png")
+            //     data.append("deviceId", "deviceAssetId")
+            //     data.append("deviceAssetId", "deviceAssetId")
+            //     let datestr = new Date().toISOString()
+            //     data.append("fileCreatedAt", datestr)
+            //     data.append("fileModifiedAt", datestr)
+            //     return fetch(config.serverAddress + "/api/assets", {
+            //         method: "POST",
+            //         body: data,
+            //         headers: {
+            //             "Content-Type": "multipart/form-data",
+            //             "x-api-key": config.apiKey,
+            //             Accept: "application/json",
+            //         },
+            //     })
+            // })
         } else if (message.contentType && message.contentType == "page") {
             let obj = { type: "saving-content", contentType: "page", data: message.data, link: document.URL }
             let str = JSON.stringify(obj)
-            navigator.clipboard.writeText(str).then(() => {
-                window.open("http://localhost:8080/desq/#/new-page")
-            })
+            console.log(str)
         }
     }
 })
