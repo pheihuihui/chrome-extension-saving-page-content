@@ -9,7 +9,7 @@ let datestr = new Date().toISOString()
 data.append("fileCreatedAt", datestr)
 data.append("fileModifiedAt", datestr)
 
-console.log(data)
+// console.log(data.getHeaders())
 
 let config = {
     method: "post",
