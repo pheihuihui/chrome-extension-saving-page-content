@@ -1,30 +1,26 @@
-chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-    if (message.type && message.type == "saving-content") {
-        if (message.contentType && message.contentType == "image") {
-            // fetch(message.data).then(async (response) => {
-            //     let blob = await response.blob()
-            //     let data = new FormData()
-            //     data.append("assetData", blob, "image.png")
-            //     data.append("deviceId", "deviceAssetId")
-            //     data.append("deviceAssetId", "deviceAssetId")
-            //     let datestr = new Date().toISOString()
-            //     data.append("fileCreatedAt", datestr)
-            //     data.append("fileModifiedAt", datestr)
-            //     return fetch(config.serverAddress + "/api/assets", {
-            //         method: "POST",
-            //         body: data,
-            //         headers: {
-            //             "Content-Type": "multipart/form-data",
-            //             "x-api-key": config.apiKey,
-            //             Accept: "application/json",
-            //         },
-            //     })
-            // })
-        } else if (message.contentType && message.contentType == "page") {
-            let obj = { type: "saving-content", contentType: "page", data: message.data, link: document.URL }
-            let str = JSON.stringify(obj)
-            console.log(str)
+import { IMessage } from "./message"
+
+chrome.runtime.onMessage.addListener(async function (message: IMessage<"pending_fetch">, _sender, sendResponse) {
+    if (message.contentType && message.contentType == "image") {
+        if (message.state == "pending_fetch") {
+            if (message.data && message.data.imageUrl) {
+                let res = await fetch(message.data.imageUrl)
+                let blob = await res.blob()
+                let blobstr = await blob2base64(blob)
+                let resp: IMessage<"pending_background"> = {
+                    contentType: "image",
+                    state: "pending_background",
+                    data: { imageBlobStr: blobstr, mimeType: blob.type },
+                }
+                console.log(resp)
+                sendResponse(resp)
+                return true
+            }
         }
+    } else if (message.contentType && message.contentType == "page") {
+        let obj = { type: "saving-content", contentType: "page", data: message.data, link: document.URL }
+        let str = JSON.stringify(obj)
+        console.log(str)
     }
 })
 
