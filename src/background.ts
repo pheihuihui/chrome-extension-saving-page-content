@@ -1,103 +1,75 @@
-// let port = chrome.runtime.connect({ name: "contentscript" })
-
-import { IMessage } from "./message"
-
-const MENU_SAVING_CONTENT = "menu-saving-content"
-
-const config = {
-    serverAddress: "http://localhost:3000",
-    apiKey: "",
-}
+import { APP_NAME, CONFIG, IMessage, MENU_SAVING_CONTENT, PORT_NAME } from "./message"
 
 chrome.storage.sync.get({ serverAddr: "http://192.168.1.100", apiKey: "xxxxx" }, (items) => {
-    config.serverAddress = items.serverAddr
-    config.apiKey = items.apiKey
+    CONFIG.serverAddress = items.serverAddr
+    CONFIG.apiKey = items.apiKey
 })
 
 chrome.runtime.onInstalled.addListener(function () {
     chrome.contextMenus.create({
         contexts: ["page", "image"],
         id: MENU_SAVING_CONTENT,
-        title: "Save Content",
+        title: APP_NAME,
     })
 })
 
-function saveImage(message: IMessage<"pending_background">) {
-    console.log(message)
+async function saveImage(message: IMessage<"pending_background">) {
     let data = new FormData()
     let timestamp = Date.now()
-    console.log(message.data.imageBlobStr)
-    let blob = new Blob([message.data.imageBlobStr], {
-        type: message.data.mimeType,
-    })
     let extensionName = message.data.mimeType.split("/")[1]
-    data.append("assetData", blob, `${timestamp}.${extensionName}`)
+    let filename = `${timestamp}.${extensionName}`
+    let blob = await fetch(message.data.imageBlobStr).then((res) => res.blob())
+    console.log(blob)
+    data.append("assetData", blob, filename)
     data.append("deviceId", "deviceAssetId")
     data.append("deviceAssetId", "deviceAssetId")
     let datestr = new Date().toISOString()
     data.append("fileCreatedAt", datestr)
     data.append("fileModifiedAt", datestr)
-    return fetch(config.serverAddress + "/api/assets", {
+    return fetch(CONFIG.serverAddress + "/api/assets", {
         method: "POST",
         body: data,
         headers: {
-            "x-api-key": config.apiKey,
+            "x-api-key": CONFIG.apiKey,
             Accept: "application/json",
         },
     })
         .then((x) => x.json())
-        .then((x) => {
-            console.log(x)
-        })
+        .then(console.log)
 }
 
-chrome.contextMenus.onClicked.addListener(async function (info, tab) {
+chrome.contextMenus.onClicked.addListener(function (info, _tab) {
     if (info.menuItemId == MENU_SAVING_CONTENT) {
-        chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
-            if (tabs && tabs[0] && tabs[0].id) {
-                if (info.mediaType && info.mediaType == "image") {
-                    if (!info.srcUrl) {
-                        return
+        chrome.tabs
+            .query({ active: true, currentWindow: true })
+            .then((tabs) => {
+                if (tabs && tabs[0] && tabs[0].id) {
+                    if (info.mediaType && info.mediaType == "image") {
+                        if (!info.srcUrl) {
+                            return
+                        }
+                        let message: IMessage<"pending_fetch"> = {
+                            contentType: "image",
+                            state: "pending_fetch",
+                            data: { imageUrl: info.srcUrl },
+                        }
+                        return {
+                            tab: tabs[0],
+                            message: message,
+                        }
                     }
-                    // fetch(info.srcUrl)
-                    //     .then(async (response) => {
-                    //         let blob = await response.blob()
-                    //         let datestr = new Date().toISOString()
-                    //         let data = new FormData()
-                    //         let timestamp = Date.now()
-                    //         data.append("assetData", blob, `${timestamp}`)
-                    //         data.append("deviceId", "deviceAssetId")
-                    //         data.append("deviceAssetId", "deviceAssetId")
-                    //         data.append("fileCreatedAt", datestr)
-                    //         data.append("fileModifiedAt", datestr)
-                    //         console.log(data)
-                    //         return fetch(config.serverAddress + "/api/assets", {
-                    //             method: "POST",
-                    //             body: data,
-                    //             headers: {
-                    //                 "x-api-key": config.apiKey,
-                    //                 Accept: "application/json",
-                    //             },
-                    //         })
-                    //     })
-                    //     .then((x) => x.json())
-                    //     .then(console.log)
-                    let message: IMessage<"pending_fetch"> = {
-                        contentType: "image",
-                        state: "pending_fetch",
-                        data: { imageUrl: info.srcUrl },
-                    }
-                    chrome.tabs.sendMessage<IMessage<"pending_fetch">>(tabs[0].id, message, async (response: IMessage<"pending_background">) => {
-                        console.log("---")
-                        await saveImage(response)
-                        return true
-                    })
-                } else {
-                    let data = await getContentFromCurrentPage(tabs[0].id)
-                    chrome.tabs.sendMessage(tabs[0].id, { type: "saving-content", contentType: "page", data: data })
                 }
-            }
-        })
+            })
+            .then((res) => {
+                if (res && res.message.contentType && res.message.contentType == "image" && res.tab.id) {
+                    return chrome.tabs.sendMessage<IMessage<"pending_fetch">>(res.tab.id, res.message)
+                }
+                return
+            })
+            .then((resp: IMessage<"pending_background">) => {
+                return saveImage(resp)
+            })
+        return true
     }
 })
 

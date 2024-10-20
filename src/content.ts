@@ -1,19 +1,24 @@
 import { IMessage } from "./message"
 
-chrome.runtime.onMessage.addListener(async function (message: IMessage<"pending_fetch">, _sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function (message: IMessage<"pending_fetch">, _sender, sendResponse) {
     if (message.contentType && message.contentType == "image") {
         if (message.state == "pending_fetch") {
             if (message.data && message.data.imageUrl) {
-                let res = await fetch(message.data.imageUrl)
-                let blob = await res.blob()
-                let blobstr = await blob2base64(blob)
-                let resp: IMessage<"pending_background"> = {
-                    contentType: "image",
-                    state: "pending_background",
-                    data: { imageBlobStr: blobstr, mimeType: blob.type },
-                }
-                console.log(resp)
-                sendResponse(resp)
+                fetch(message.data.imageUrl)
+                    .then((res) => res.blob())
+                    .then((blob) => {
+                        return Promise.all([blob.type, blob2base64(blob)])
+                    })
+                    .then((blobstrs) => {
+                        let resp: IMessage<"pending_background"> = {
+                            contentType: "image",
+                            state: "pending_background",
+                            data: { imageBlobStr: blobstrs[1], mimeType: blobstrs[0] },
+                        }
+                        // chrome.runtime.sendMessage(resp)
+                        sendResponse(resp)
+                    })
+                console.log(message)
                 return true
             }
         }

@@ -9,3 +9,11 @@ export interface IMessage<K extends keyof MState> {
     state: K
     data: MState[K]
 }
+
+export const PORT_NAME = "saving-page-port"
+export const MENU_SAVING_CONTENT = "menu-saving-content"
+export const APP_NAME = "Saving Content"
+export const CONFIG = {
+    serverAddress: "http://localhost:3000",
+    apiKey: "",
+}
