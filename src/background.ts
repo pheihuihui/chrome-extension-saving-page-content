@@ -1,8 +1,9 @@
-import { APP_NAME, CONFIG, IMessage, MENU_SAVING_CONTENT, PORT_NAME } from "./message"
+import { APP_NAME, CONFIG, IMessage, MENU_SAVING_CONTENT } from "./message"
 
-chrome.storage.sync.get({ serverAddr: "http://192.168.1.100", apiKey: "xxxxx" }, (items) => {
+chrome.storage.sync.get({ serverAddr: "http://192.168.1.100", apiKey: "xxxxx", albumId: "" }, (items) => {
     CONFIG.serverAddress = items.serverAddr
     CONFIG.apiKey = items.apiKey
+    CONFIG.albumId = items.albumId
 })
 
 chrome.runtime.onInstalled.addListener(function () {
@@ -35,6 +36,25 @@ async function saveImage(message: IMessage<"pending_background">) {
         },
     })
         .then((x) => x.json())
+        .then((x) => {
+            console.log("------")
+            console.log(x)
+            if (x && x.id) {
+                let data = JSON.stringify({
+                    ids: [x.id],
+                })
+                return fetch(CONFIG.serverAddress + `/api/albums/${CONFIG.albumId}/assets`, {
+                    method: "PUT",
+                    body: data,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-api-key": CONFIG.apiKey,
+                        Accept: "application/json",
+                    },
+                })
+            }
+            return
+        })
         .then(console.log)
 }
 

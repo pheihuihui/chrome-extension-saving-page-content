@@ -10,10 +10,16 @@ export interface IMessage<K extends keyof MState> {
     data: MState[K]
 }
 
+export interface IServerResponse {
+    id: string
+    status: string
+}
+
 export const PORT_NAME = "saving-page-port"
 export const MENU_SAVING_CONTENT = "menu-saving-content"
 export const APP_NAME = "Saving Content"
 export const CONFIG = {
     serverAddress: "http://localhost:3000",
     apiKey: "",
+    albumId: "",
 }
