@@ -23,9 +23,11 @@ chrome.runtime.onMessage.addListener(function (message: IMessage<"pending_fetch"
             }
         }
     } else if (message.contentType && message.contentType == "page") {
-        let obj = { type: "saving-content", contentType: "page", data: message.data, link: document.URL }
-        let str = JSON.stringify(obj)
-        console.log(str)
+        if (message.state == "pending_fetch") {
+            setTimeout(() => {
+                blink()
+            }, 100)
+        }
     }
 })
 
@@ -40,4 +42,21 @@ function blob2base64(blob: Blob) {
         }
         reader.readAsDataURL(blob)
     })
+}
+
+function blink() {
+    let blink = document.createElement("div")
+    blink.style.position = "fixed"
+    blink.style.top = "10px"
+    blink.style.left = "10px"
+    blink.style.bottom = "10px"
+    blink.style.right = "10px"
+    blink.style.zIndex = "9999"
+    blink.style.borderRadius = "25px"
+    blink.style.boxShadow = "0 0 10px 10px #4caa98"
+    blink.style.backgroundColor = "transparent"
+    document.body.appendChild(blink)
+    setTimeout(() => {
+        document.body.removeChild(blink)
+    }, 500)
 }

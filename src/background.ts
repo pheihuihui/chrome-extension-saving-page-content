@@ -22,9 +22,12 @@ chrome.runtime.onInstalled.addListener(function () {
 async function saveImageFromContent(message: IMessage<"pending_background">) {
     let data = new FormData()
     let timestamp = Date.now()
+    if (!message.data?.mimeType || !message.data?.imageBlobStr) {
+        return
+    }
     let extensionName = message.data.mimeType.split("/")[1]
     let filename = `${timestamp}.${extensionName}`
-    let blob = await fetch(message.data.imageBlobStr).then((res) => res.blob())
+    let blob = await fetch(message.data?.imageBlobStr).then((res) => res.blob())
     data.append("assetData", blob, filename)
     data.append("deviceId", "deviceAssetId")
     data.append("deviceAssetId", "deviceAssetId")
@@ -139,7 +142,19 @@ chrome.contextMenus.onClicked.addListener(function (info, _tab) {
             .then((resp) => {
                 return resp.blob()
             })
-            .then(saveImageFromBlob)
+            .then((blb) => {
+                let message: IMessage<"pending_fetch"> = {
+                    contentType: "page",
+                    state: "pending_fetch",
+                }
+                let tabid = _tab?.id
+                if (!tabid) {
+                    return
+                }
+                chrome.tabs.sendMessage<IMessage<"pending_fetch">>(tabid, message)
+                return saveImageFromBlob(blb)
+            })
+            .then(console.log)
         return true
     }
 })
