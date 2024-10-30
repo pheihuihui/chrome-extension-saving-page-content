@@ -1,5 +1,6 @@
 import { buildSync } from "esbuild"
 import { copyFileSync, readdirSync, statSync } from "fs"
+import { exec } from "child_process"
 
 buildSync({
     entryPoints: ["./src/background.ts"],
@@ -40,15 +41,9 @@ function listAllFiles(dir) {
 }
 
 let imgFiles = listAllFiles("./src/icons")
-// let certs = listAllFiles("./src/certs")
 
 imgFiles.forEach((file) => {
     copyFileSync(file, `./dist/${file.split("/")[3]}`)
 })
 
-// certs.forEach((file) => {
-//     let name = file.split("/")[3]
-//     if (name != ".keep") {
-//         copyFileSync(file, `./dist/${name}`)
-//     }
-// })
+exec("start http://reload-this-extension/")

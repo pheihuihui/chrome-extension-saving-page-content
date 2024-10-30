@@ -19,6 +19,8 @@ chrome.runtime.onInstalled.addListener(function () {
     })
 })
 
+const RELOAD_URL = "http://reload-this-extension/"
+
 async function saveImageFromContent(message: IMessage<"pending_background">) {
     let data = new FormData()
     let timestamp = Date.now()
@@ -171,3 +173,11 @@ async function getContentFromCurrentPage(tabid: number) {
         })
     })
 }
+
+chrome.tabs.onUpdated.addListener(function (tabId, info) {
+    console.log(info.url)
+    if (info.url == RELOAD_URL) {
+        chrome.tabs.remove(tabId)
+        chrome.runtime.reload()
+    }
+})

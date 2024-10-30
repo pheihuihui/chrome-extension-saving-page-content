@@ -4,7 +4,7 @@
     "manifest_version": 3,
     "version": "0.1",
     "description": "...",
-    "permissions": ["activeTab", "scripting", "contextMenus", "pageCapture", "storage"],
+    "permissions": ["activeTab", "scripting", "contextMenus", "pageCapture", "storage", "tabs"],
     "background": {
         "service_worker": "background.js"
     },
